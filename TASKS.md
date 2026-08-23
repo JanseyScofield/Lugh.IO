@@ -29,12 +29,12 @@
 ---
 
 ## 2. Estrutura Base em Fatias Verticais (Vertical Slice)
-- [ ] **2.1. Criação dos Diretórios Arquiteturais**
+- [x] **2.1. Criação dos Diretórios Arquiteturais**
   - Criar estrutura conforme `ARCHITECTURE.md`:
     - `core/` e `core/llm/` (infraestrutura compartilhada)
-    - `features/` (fatias verticais para casos de uso)
+    - `features/` e `features/generate_resume/` (fatias verticais para casos de uso)
     - `tests/`, `tests/core/` e `tests/features/` (suíte TDD)
-- [ ] **2.2. Módulo de Configurações Globais (`core/config.py`)**
+- [x] **2.2. Módulo de Configurações Globais (`core/config.py`)**
   - Implementar leitor de configurações centralizado via `dotenv`/`pydantic`.
   - **Fail Fast:** Lançar exceção clara se `GEMINI_API_KEY` não for encontrada ao carregar o ambiente.
 

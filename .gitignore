@@ -1,1 +1,36 @@
+# Ambientes e Segurança
 .env
+.env.local
+.env.*.local
+
+# Caches e Compilados Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Testes e Cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+# Ambientes Virtuais
+venv/
+.venv/
+env/
+ENV/
+env.bak/
+venv.bak/
+
+# IDEs e Sistema Operacional
+.vscode/
+.idea/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
