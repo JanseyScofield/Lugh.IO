@@ -10,7 +10,9 @@ agent:
     backend/**:
       - "./skills/backend.md"
       - "./skills/advanced_engineering.md"
+      - "./skills/commits.md"
     frontend/**:
       - "./skills/frontend.md"
       - "./skills/ui_ux.md"
       - "./skills/advanced_engineering.md"
+      - "./skills/commits.md"

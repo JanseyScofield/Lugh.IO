@@ -13,63 +13,58 @@ Este documento detalha as decisões técnicas, a stack e a organização dos com
 *   **Banco de Dados:** PostgreSQL (A partir da Sprint 7).
 *   **Infraestrutura:** Docker e Docker Compose (desde a Sprint 1).
 
-## 2. Arquitetura do Back-end (Vertical Slice)
-O sistema é organizado por **Funcionalidades (Features)**. Isso garante alta coesão e facilita a manutenção do fluxo de IA.
+## 2. Estrutura Geral do Monorepo
 
-### Estrutura de Diretórios
+O projeto adota uma estrutura de **Monorepo** com separação clara de responsabilidades entre a raiz do projeto (orquestração e configs globais), o **Back-end** (Python com `src-layout` e Vertical Slice) e o **Front-end** (React / TypeScript).
+
 ```text
-backend/
-├── docker-compose.yml
-├── Dockerfile
-├── requirements.txt
-├── main.py                   # Ponto de entrada (CLI nas Sprints 1-3, FastAPI nas Sprints 4+)
+Lugh.IO/
+├── .ai/                      # Configurações do Agente IA (skills, contexto e regras)
+│   ├── config.yml            # Triggers de contexto (backend/**, frontend/**) e instruções
+│   └── skills/               # Instruções especializadas por domínio (backend.md, frontend.md, etc.)
+├── docker-compose.yml        # Orquestrador global dos serviços (backend e frontend)
+├── .env                      # Variáveis de ambiente globais (GEMINI_API_KEY, etc.)
+├── .env.example              # Modelo de variáveis de ambiente
+├── TASKS.md                  # Checklist de sprints e tarefas
+├── specs/                    # Documentação de arquitetura e especificações
+│   └── ARCHITECTURE.md
 │
-├── core/                     # Infraestrutura base compartilhada
-│   ├── config.py             # Gestão de variáveis de ambiente (.env)
-│   └── llm/                  # Abstração de Inteligência Artificial
-│       ├── ports.py          # A interface/contrato abstrato (ex: LlmProtocol)
-│       └── gemini_adapter.py # Implementação concreta (Padrão Adapter)
+├── backend/                  # Serviço de Back-end (Python 3.10+)
+│   ├── Dockerfile            # Dockerfile exclusivo do serviço de Back-end
+│   ├── requirements.txt      # Dependências Python
+│   ├── tests/                # Suíte de testes TDD (pytest)
+│   │   ├── core/             # Testes de infraestrutura e adaptadores
+│   │   └── features/         # Testes de integração/casos de uso
+│   └── src/                  # Código-fonte isolado (Padrão src-layout)
+│       ├── main.py           # Ponto de entrada (CLI Sprints 1-3, FastAPI Sprints 4+)
+│       ├── core/             # Infraestrutura compartilhada
+│       │   ├── config.py     # Leitor de ambiente Fail-Fast (Pydantic/dotenv)
+│       │   └── llm/          # Camada de abstração de IA (LlmProtocol & GeminiAdapter)
+│       └── features/         # Fatias verticais (Casos de Uso)
+│           └── generate_resume/ # Feature: Geração de Currículo
+│               ├── models.py # Schemas Pydantic de entrada/saída
+│               ├── prompts.py# Templates de Prompt (Regra de Negócio)
+│               ├── service.py# Orquestrador do caso de uso
+│               └── router.py # Endpoints FastAPI da feature
 │
-├── features/                 # As fatias verticais (Casos de Uso)
-│   └── generate_resume/      # Feature: Geração de Currículo
-│       ├── models.py         # Estruturas de dados de entrada e saída
-│       ├── prompts.py        # Templates de prompt (Regra de negócio da IA)
-│       ├── file_reader.py    # Lógica de extração de texto
-│       ├── service.py        # Orquestrador da feature
-│       └── router.py         # Endpoints FastAPI para esta feature
-│
-└── tests/                    # Suíte de TDD (Cobertura mínima de 70%)
-    ├── core/                 # Testes unitários para adaptadores
-    └── features/             # Testes das funcionalidades
-
+└── frontend/                 # Serviço de Front-end (React, Vite, TS) [Sprints futuras]
+    ├── Dockerfile            # Dockerfile exclusivo do serviço de Front-end
+    ├── package.json          # Dependências Node.js
+    └── src/                  # Código-fonte do Front-end
+        ├── api/              # Comunicação HTTP (Axios / TanStack Query)
+        ├── components/       # Componentes de UI reutilizáveis
+        ├── pages/            # Páginas e roteamento
+        └── types/            # Tipagens TypeScript
 ```
 
 ### Regras da Arquitetura Back-end
 
-* **Isolamento de Feature:** Uma feature não deve depender da regra de negócio de outra feature. Código compartilhado desce para a pasta `core/`.
+* **Isolamento de Feature:** Uma feature não deve depender da regra de negócio de outra feature. Código compartilhado desce para a pasta `backend/src/core/`.
 * **O Prompt é Regra de Negócio:** A engenharia de prompt reside junto da feature que a utiliza.
+* **Padrão `src-layout`:** Todo o código Python executável reside dentro de `backend/src/`, mantendo a raiz do serviço focada em testes e configurações.
 
-## 3. Arquitetura do Front-end
+## 3. Padrões de Design Aplicados
 
-Separado logicamente entre a camada de comunicação de rede (API) e a de renderização (UI).
-
-```text
-frontend/
-├── src/
-│   ├── api/               # Comunicação com o Back-end
-│   │   ├── client.ts      # Instância configurada do Axios
-│   │   ├── commands/      # Mutações (POST, PUT, DELETE)
-│   │   └── queries/       # Consultas (GET)
-│   ├── components/        # UI reutilizável (Botões, Inputs)
-│   ├── pages/             # Telas completas roteáveis
-│   ├── types/             # Tipagem estática TypeScript
-│   ├── App.tsx            # Roteamento e layouts base
-│   └── index.css          # Setup do Tailwind
-
-```
-
-## 4. Padrões de Design Aplicados
-
-* **Vertical Slicing:** Foco na entrega ponta a ponta da funcionalidade em pastas coesas.
+* **Vertical Slicing:** Foco na entrega ponta a ponta da funcionalidade em fatias coesas dentro de `features/`.
 * **Adapter Pattern (Ports and Adapters):** O sistema depende da interface `LlmProtocol`. Qualquer IA externa é traduzida por um adaptador.
 * **Dependency Injection:** Serviços recebem instâncias via parâmetros, facilitando a injeção de Mocks na suíte de testes.
