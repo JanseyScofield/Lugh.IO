@@ -41,11 +41,11 @@
 ---
 
 ## 3. Camada de Abstração do LLM (Padrão Adapter)
-- [ ] **3.1. Interface/Contrato Abstrato (`core/llm/ports.py`)**
+- [x] **3.1. Interface/Contrato Abstrato (`core/llm/ports.py`)**
   - Criar o protocolo `LlmProtocol` usando `typing.Protocol`.
   - Definir a assinatura do método: `generate_text(self, prompt: str, **kwargs) -> str`.
   - Garantir o princípio de Inversão de Dependência (DIP) e Segregação de Interface (ISP).
-- [ ] **3.2. Adaptador Concreto do Gemini (`core/llm/gemini_adapter.py`)**
+- [x] **3.2. Adaptador Concreto do Gemini (`core/llm/gemini_adapter.py`)**
   - Implementar a classe `GeminiAdapter` aderente a `LlmProtocol`.
   - **Bouncer Pattern (Fail Fast):** Validar se o prompt de entrada é válido (não nulo, não vazio) antes de disparar a requisição ao SDK.
   - Injetar dependências (API key / client) via construtor `__init__`.
