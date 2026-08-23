@@ -1,0 +1,16 @@
+workspace:
+  name: "Lugh.IO"
+  mode: "interactive"
+
+agent:
+  system_instructions:
+    - "./skills/global.md"
+  
+  context_triggers:
+    backend/**:
+      - "./skills/backend.md"
+      - "./skills/advanced_engineering.md"
+    frontend/**:
+      - "./skills/frontend.md"
+      - "./skills/ui_ux.md"
+      - "./skills/advanced_engineering.md"
